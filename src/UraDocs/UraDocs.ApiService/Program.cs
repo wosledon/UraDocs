@@ -20,6 +20,8 @@ builder.Services.AddCors(builder =>
     });
 });
 
+builder.Services.AddRazorPages();
+
 // Add service defaults & Aspire components.
 builder.AddServiceDefaults();
 
@@ -60,6 +62,9 @@ else
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
+
+app.UseBlazorFrameworkFiles();
+app.MapRazorPages();
 
 app.UseStaticFiles();
 

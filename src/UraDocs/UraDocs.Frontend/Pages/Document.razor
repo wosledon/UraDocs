@@ -1,0 +1,67 @@
+﻿@page "/document"
+@using MudBlazor
+@using UraDocs.Shared
+@using UraDocs.Frontend.Services
+
+<PageTitle>Document</PageTitle>
+
+<MudContainer>
+    <MudGrid Justify="Justify.Center" Style="min-height:90vh">
+        <MudItem md="3" sm="12">
+            <MudTreeView T="UraMenu" ExpandOnDoubleClick>
+                @RenderNestedList(Menus)
+            </MudTreeView>
+        </MudItem>
+        <MudItem md="9" sm="12">
+            <iframe src="@($"{@DocumentUrl}?time={DateTime.Now.Ticks}")"></iframe>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@functions {
+    RenderFragment RenderNestedList(List<UraMenu> children)
+    {
+        return builder =>
+        {
+            foreach (var child in children)
+            {
+                builder.OpenComponent<MudTreeViewItem<UraMenu>>(0);
+                builder.AddAttribute(1, "Text", child.Name);
+                builder.AddAttribute(2, "Icon", Icons.Custom.FileFormats.FileDocument);
+                builder.AddAttribute(3, "Value", child);
+                builder.AddAttribute(4, "IconColor", Color.Primary);
+                builder.AddAttribute(5, "OnClick", EventCallback.Factory.Create<MouseEventArgs>(this, async (args) =>
+                {
+                    DocumentUrl = child.HtmlDoc;
+                    await InvokeAsync(StateHasChanged);
+                }));
+                if (child.Children != null && child.Children.Count > 0)
+                {
+                    builder.AddAttribute(2, "ChildContent", RenderNestedList(child.Children));
+                }
+                builder.CloseComponent();
+            }
+        };
+    }
+}
+
+@code {
+    [Inject] UraService UraService { get; set; } = default!;
+
+    List<UraMenu> Menus = new();
+
+    string DocumentUrl = string.Empty;
+
+    async Task RefreshMenusAsync()
+    {
+        Menus = await UraService.GetMenusAsync();
+        DocumentUrl = Menus.FirstOrDefault()?.HtmlDoc ?? string.Empty;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshMenusAsync();
+    }
+}

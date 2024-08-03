@@ -12,7 +12,7 @@ public class FileHelper
 
     public static string GetMarkDownPath(string path)
     {
-        return Path.Combine(Contas.MarkdownPath, path);
+        return Path.Combine(Contas.MarkdownPath, path.TrimStart(new[] {'.', '/'}));
     }
 
     public static string GetHtmlPath()

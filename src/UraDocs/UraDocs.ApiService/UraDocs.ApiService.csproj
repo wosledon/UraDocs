@@ -8,7 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.37.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SimpleSnowFlake" Version="2.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
@@ -16,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\UraDocs.Shared\UraDocs.Shared.csproj" />
+    <ProjectReference Include="..\UraDocs.Frontend\UraDocs.Frontend.csproj" />
     <ProjectReference Include="..\UraDocs.ServiceDefaults\UraDocs.ServiceDefaults.csproj" />
   </ItemGroup>
 

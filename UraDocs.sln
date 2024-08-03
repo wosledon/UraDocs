@@ -24,6 +24,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UraDocs.Web", "src\UraDocs\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UraDocs.Shared", "src\UraDocs.Shared\UraDocs.Shared.csproj", "{063AB079-8533-4C50-8ACB-910878B1E769}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UraDocs.Frontend", "src\UraDocs\UraDocs.Frontend\UraDocs.Frontend.csproj", "{BAAC92C2-249B-400C-A1DD-08F67875538C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{063AB079-8533-4C50-8ACB-910878B1E769}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{063AB079-8533-4C50-8ACB-910878B1E769}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{063AB079-8533-4C50-8ACB-910878B1E769}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAAC92C2-249B-400C-A1DD-08F67875538C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAAC92C2-249B-400C-A1DD-08F67875538C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAAC92C2-249B-400C-A1DD-08F67875538C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAAC92C2-249B-400C-A1DD-08F67875538C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{5BE0AD71-B9A0-4738-ACDE-45002C0FB53F} = {1E479203-891B-4058-A65D-5D0B325ECC20}
 		{0694C307-B49A-449B-8940-043D48D1F2C8} = {1E479203-891B-4058-A65D-5D0B325ECC20}
 		{063AB079-8533-4C50-8ACB-910878B1E769} = {1E479203-891B-4058-A65D-5D0B325ECC20}
+		{BAAC92C2-249B-400C-A1DD-08F67875538C} = {1E479203-891B-4058-A65D-5D0B325ECC20}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7979DD36-C7FC-4E9C-993C-17357F07D34F}

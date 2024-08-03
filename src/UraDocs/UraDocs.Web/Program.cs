@@ -6,14 +6,14 @@ using UraDocs.Web.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire components.
-builder.AddServiceDefaults();
+//builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
+    //.AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-//builder.Services.AddOutputCache();
+builder.Services.AddOutputCache();
 
 builder.Services.AddHttpClient("apiservice", client =>
     {
@@ -43,10 +43,10 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-//app.UseOutputCache();
+app.UseOutputCache();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
+    //.AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     //.AddAdditionalAssemblies(typeof(UraDocs.Web.Components._Imports).Assembly)
     ;

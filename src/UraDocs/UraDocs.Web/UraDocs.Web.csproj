@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\UraDocs.Shared\UraDocs.Shared.csproj" />
-    <ProjectReference Include="..\UraDocs.ServiceDefaults\UraDocs.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

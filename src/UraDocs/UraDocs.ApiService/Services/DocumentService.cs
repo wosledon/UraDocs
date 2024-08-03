@@ -36,7 +36,7 @@ public class DocumentService
     {
         var relationMarkdownPath = CheckMarkdownPath(markdownPath);
 
-        var fileHash = await _db.Query<FileHash>().FirstOrDefaultAsync(x => x.FilePath.ToLower() == relationMarkdownPath.ToLower());
+        var fileHash = await _db.Query<FileHash>().FirstOrDefaultAsync(x => x.FilePath.ToLower() == markdownPath.ToLower());
 
         return (fileHash, relationMarkdownPath);
     }
@@ -47,7 +47,7 @@ public class DocumentService
 
         if (fileHash is not null) return;
 
-        var markdown = File.ReadAllText(relationMarkdownPath);
+        var markdown = await ReadTextAsync(relationMarkdownPath);
 
         var html = Markdig.Markdown.ToHtml(markdown);
 
@@ -77,11 +77,32 @@ public class DocumentService
         await File.WriteAllTextAsync(path, text, Encoding.UTF8);
     }
 
+    private async Task<string> ReadTextAsync(string path)
+    {
+        try
+        {
+            using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (StreamReader reader = new StreamReader(fileStream))
+            {
+                return await reader.ReadToEndAsync();
+            }
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine($"无法读取文件: {ex.Message}");
+            return string.Empty;
+        }
+    }
+
     public async Task UpdateHtmlAsync(string markdownPath)
     {
         var (fileHash, relationMarkdownPath) = await GetFileHashAsync(markdownPath);
 
-        if (fileHash is null) return;
+        if (fileHash == null)
+        {
+            await GeneratorHtmlAsync(markdownPath);
+            return;
+        }
 
         var hash = relationMarkdownPath.GetFileHash();
 
@@ -90,15 +111,9 @@ public class DocumentService
             return;
         }
         
-        var markdown = File.ReadAllText(relationMarkdownPath);
+        var markdown = await ReadTextAsync(relationMarkdownPath);
 
         var html = Markdig.Markdown.ToHtml(markdown);
-
-        if (fileHash == null)
-        {
-            await GeneratorHtmlAsync(markdownPath);
-            return;
-        }
 
         var path = GetHtmlPath(fileHash.Html);
 

@@ -77,8 +77,25 @@ public class FileWaterBackgroundService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var documentService = scope.ServiceProvider.GetRequiredService<DocumentService>();
 
-        await documentService.DeleteHtmlAsync(GetRelativePath(e.OldFullPath));
-        await documentService.GeneratorHtmlAsync(GetRelativePath(e.FullPath));
+        if(IsTemporaryFile(e.Name ?? string.Empty))
+        {
+            return;
+        }
+
+        if(IsTemporaryFile(e.OldName ?? string.Empty))
+        {
+            await documentService.UpdateHtmlAsync(GetRelativePath(e.FullPath));
+        }
+        else
+        {
+            await documentService.DeleteHtmlAsync(GetRelativePath(e.OldFullPath));
+            await documentService.GeneratorHtmlAsync(GetRelativePath(e.FullPath));
+        }
+    }
+
+    private bool IsTemporaryFile(string fileName)
+    {
+        return fileName.EndsWith("~") || fileName.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase);
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
