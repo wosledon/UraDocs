@@ -1,6 +1,24 @@
-{
-  "Path": "./README - 副本.MD",
-  "Icon": "icon-doc",
-  "Name": "Ura 文档",
-  "Children": []
-}
+[
+  {
+    "Path": "./README - 副本.MD",
+    "Icon": "icon-doc",
+    "Name": "Ura 文档",
+    "Children": [
+      {
+        "Path": "./README.MD",
+        "Icon": "icon-doc",
+        "Name": "Ura 文档"
+      },
+      {
+        "Path": "./README.MD",
+        "Icon": "icon-doc",
+        "Name": "Ura 文档"
+      },
+      {
+        "Path": "./README.MD",
+        "Icon": "icon-doc",
+        "Name": "Ura 文档"
+      }
+    ]
+  }
+]

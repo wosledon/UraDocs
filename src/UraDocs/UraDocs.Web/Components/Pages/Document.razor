@@ -1,0 +1,50 @@
+﻿@page "/document"
+@using UraDocs.Shared
+@using UraDocs.Web.Services
+
+<PageTitle>Document</PageTitle>
+<MudPaper Width="300px" Elevation="0">
+    <MudTreeView T="UraMenu" ExpandOnClick>
+        @RenderNestedList(Menus)
+    </MudTreeView>
+</MudPaper>
+@functions {
+    RenderFragment RenderNestedList(List<UraMenu> children)
+    {
+        return builder =>
+        {
+            foreach (var child in children)
+            {
+                builder.OpenComponent<MudTreeViewItem<UraMenu>>(0);
+                builder.AddAttribute(1, "Text", child.Name);
+                builder.AddAttribute(2, "Icon", Icons.Custom.FileFormats.FileDocument);
+                builder.AddAttribute(3, "Value", child);
+                builder.AddAttribute(4, "IconColor", Color.Primary);
+                // builder.AddAttribute(5, "OnClick", EventCallback.Factory.Create(this, () => Console.WriteLine(child.Name)));
+                if (child.Children != null && child.Children.Count > 0)
+                {
+                    builder.AddAttribute(2, "ChildContent", RenderNestedList(child.Children));
+                }
+                builder.CloseComponent();
+            }
+        };
+    }
+}
+
+@code {
+    [Inject] UraService UraService { get; set; } = default!;
+
+    List<UraMenu> Menus = new();
+
+    async Task RefreshMenusAsync()
+    {
+        Menus = await UraService.GetMenusAsync();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshMenusAsync();
+    }
+}

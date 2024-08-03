@@ -7,7 +7,7 @@ public class UraMenu
     public string Name { get; set; } = string.Empty;
     public string HtmlDoc { get; set; } = string.Empty;
 
-    public ICollection<UraMenu> Children { get; set; } = new List<UraMenu>();
+    public List<UraMenu> Children { get; set; } = new List<UraMenu>();
 }
 
 public class UraProject

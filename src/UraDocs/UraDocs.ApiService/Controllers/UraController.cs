@@ -19,11 +19,14 @@ public class UraController : ApiControllerBase
     [HttpGet]
     public async Task<IActionResult> MenuAsync()
     {
-        var menu = await FileHelper.GetMenuAsync();
+        var menus = await FileHelper.GetMenuAsync();
 
-        await PrepareMenuAsync(menu);
+        foreach(var menu in menus)
+        {
+            await PrepareMenuAsync(menu);
+        }
 
-        return Ok(menu);
+        return Ok(menus);
     }
 
     private async Task PrepareMenuAsync(UraMenu menu)

@@ -30,11 +30,11 @@ public class FileHelper
         return Path.Combine(Directory.GetCurrentDirectory(), Contas.UraMenuPath);
     }
 
-    public static async Task<UraMenu> GetMenuAsync()
+    public static async Task<List<UraMenu>> GetMenuAsync()
     {
         var path = GetUraMenuPath();
 
-        return await ReadAndCheckAsync<UraMenu>(path);
+        return await ReadAndCheckAsync<List<UraMenu>>(path);
     }
 
     public static async Task<UraProject> GetProjectAsync()

@@ -7,10 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.7" />
     <PackageReference Include="MudBlazor" Version="7.5.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\UraDocs.Shared\UraDocs.Shared.csproj" />
     <ProjectReference Include="..\UraDocs.ServiceDefaults\UraDocs.ServiceDefaults.csproj" />
   </ItemGroup>
 
