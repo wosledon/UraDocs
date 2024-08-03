@@ -2,9 +2,10 @@
 
 public class UraMenu
 {
+    public string Path { get; set; } = string.Empty;
     public string Icon { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
-    public string Path { get; set; } = string.Empty;
+    public string HtmlDoc { get; set; } = string.Empty;
 
     public ICollection<UraMenu> Children { get; set; } = new List<UraMenu>();
 }
