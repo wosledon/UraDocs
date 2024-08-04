@@ -4,15 +4,25 @@ namespace UraDocs.ApiService.Extensions;
 
 public static class FileExtensions
 {
-    public static string GetFileHash(this string filePath)
+    public static bool TryGetFileHash(this string filePath, out string hash)
     {
-        using (var sha256 = SHA256.Create())
+        try
         {
-            using (var fileStream = File.OpenRead(filePath))
+            using (var sha256 = SHA256.Create())
             {
-                byte[] hashBytes = sha256.ComputeHash(fileStream);
-                return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                using (var fileStream = File.OpenRead(filePath))
+                {
+                    byte[] hashBytes = sha256.ComputeHash(fileStream);
+                    hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                }
             }
+
+            return true;
+        }
+        catch
+        {
+            hash = string.Empty;
+            return false;
         }
     }
 }

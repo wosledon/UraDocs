@@ -49,6 +49,7 @@ public class FileWaterBackgroundService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var documentService = scope.ServiceProvider.GetRequiredService<DocumentService>();
 
+        
         var path = GetRelativePath(e.FullPath);
 
         switch (e.ChangeType)

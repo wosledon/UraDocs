@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Markdig;
+using Microsoft.EntityFrameworkCore;
 using System.Text;
 using UraDocs.ApiService.Domain;
 using UraDocs.ApiService.Extensions;
@@ -41,6 +42,79 @@ public class DocumentService
         return (fileHash, relationMarkdownPath);
     }
 
+    private string GetHtml(string markdown)
+    {
+        var htmlContent = Markdig.Markdown.ToHtml(markdown);
+
+        htmlContent = htmlContent.Replace("<pre>", "<pre class=\"line-numbers\">");
+
+        return $@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/prismjs@1.25.0/themes/prism.min.css"">
+    <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/prismjs@1.25.0/plugins/line-numbers/prism-line-numbers.min.css"">
+    <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/prismjs@1.25.0/plugins/toolbar/prism-toolbar.min.css"">
+    <title>Document</title>
+</head>
+<style>
+/* 自定义复制按钮样式 */
+.prism-toolbar .toolbar-item {{
+    background-color: #007BFF; /* 蓝色背景 */
+    color: white; /* 白色文字 */
+    border-radius: 5px; /* 圆角 */
+    padding: 5px 10px; /* 内边距 */
+    font-size: 14px; /* 字体大小 */
+    cursor: pointer; /* 鼠标指针 */
+}}
+
+.prism-toolbar .toolbar-item:hover {{
+    background-color: #0056b3; /* 悬停时的背景颜色 */
+}}
+
+/* 自定义代码块样式 */
+pre[class*=""language-""] {{
+    background: #f5f5f5; /* 浅色背景 */
+    color: #333; /* 深色文字 */
+    border-radius: 5px; /* 圆角 */
+    padding: 15px; /* 内边距 */
+    overflow: auto; /* 滚动条 */
+    font-size: 14px; /* 字体大小 */
+    line-height: 1.5; /* 行高 */
+}}
+
+/* 自定义行号样式 */
+pre[class*=""language-""].line-numbers {{
+    padding-left: 3.8em; /* 为行号留出空间 */
+}}
+
+pre[class*=""language-""].line-numbers .line-numbers-rows {{
+    border-right: 1px solid #ccc; /* 行号分隔线 */
+}}
+
+pre[class*=""language-""].line-numbers .line-numbers-rows > span:before {{
+    color: #999; /* 行号颜色 */
+}}
+</style>
+<body>
+    {htmlContent}
+    <script src=""https://cdn.jsdelivr.net/npm/prismjs@1.25.0/prism.min.js""></script>
+    <script src=""https://cdn.jsdelivr.net/npm/prismjs@1.25.0/components/prism-core.min.js""></script>
+    <script src=""https://cdn.jsdelivr.net/npm/prismjs@1.25.0/plugins/autoloader/prism-autoloader.min.js""></script>
+    <script src=""https://cdn.jsdelivr.net/npm/prismjs@1.25.0/plugins/line-numbers/prism-line-numbers.min.js""></script>
+    <script src=""https://cdn.jsdelivr.net/npm/prismjs@1.25.0/plugins/toolbar/prism-toolbar.min.js""></script>
+    <script src=""https://cdn.jsdelivr.net/npm/prismjs@1.25.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js""></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {{
+            Prism.highlightAll();
+        }});
+    </script>
+</body>
+</html>";
+    }
+
     public async Task GeneratorHtmlAsync(string markdownPath)
     {
         var (fileHash, relationMarkdownPath) = await GetFileHashAsync(markdownPath);
@@ -49,15 +123,20 @@ public class DocumentService
 
         var markdown = await ReadTextAsync(relationMarkdownPath);
 
-        var html = Markdig.Markdown.ToHtml(markdown);
+        var html = GetHtml(markdown);
 
         var htmlId = _snowflakeGeneratorService.GetId();
+
+        if (!relationMarkdownPath.TryGetFileHash(out var hashString))
+        {
+            return;
+        }
 
         var hash = new FileHash
         {
             FilePath = markdownPath,
             FileName = Path.GetFileName(markdownPath),
-            Hash = relationMarkdownPath.GetFileHash(),
+            Hash = hashString,
             Html = $"{htmlId}.html"
         };
 
@@ -72,9 +151,18 @@ public class DocumentService
         await _db.InsertAsync(hash);
     }
 
-    private async Task WriteTextAsync(string path, string text)
+    private async Task<bool> WriteTextAsync(string path, string text)
     {
-        await File.WriteAllTextAsync(path, text, Encoding.UTF8);
+        try
+        {
+            await File.WriteAllTextAsync(path, text, Encoding.UTF8);
+
+            return true;
+        }
+        catch 
+        {
+            return false;
+        }
     }
 
     private async Task<string> ReadTextAsync(string path)
@@ -104,7 +192,10 @@ public class DocumentService
             return;
         }
 
-        var hash = relationMarkdownPath.GetFileHash();
+        if(!relationMarkdownPath.TryGetFileHash(out var hash))
+        {
+            return;
+        }
 
         if (hash == fileHash.Hash)
         {
@@ -113,7 +204,7 @@ public class DocumentService
         
         var markdown = await ReadTextAsync(relationMarkdownPath);
 
-        var html = Markdig.Markdown.ToHtml(markdown);
+        var html = GetHtml(markdown);
 
         var path = GetHtmlPath(fileHash.Html);
 
@@ -122,8 +213,10 @@ public class DocumentService
             File.Create(path);
         }
 
-        await WriteTextAsync(path, html);
-        await _db.UpdateAsync(fileHash);
+        if(await WriteTextAsync(path, html))
+        {
+            await _db.UpdateAsync(fileHash);
+        }
     }
 
     public async Task DeleteHtmlAsync(string markdownPath)
