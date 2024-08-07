@@ -6,8 +6,11 @@ public class UraMenu
     public string Icon { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string HtmlDoc { get; set; } = string.Empty;
+}
 
-    public List<UraMenu> Children { get; set; } = new List<UraMenu>();
+public class UraMenuTree: UraMenu
+{
+    public List<UraMenuTree> Children { get; set; } = new();
 }
 
 public class UraProject

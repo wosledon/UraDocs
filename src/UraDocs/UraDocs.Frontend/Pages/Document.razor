@@ -19,7 +19,7 @@
 </MudContainer>
 
 @functions {
-    RenderFragment RenderNestedList(List<UraMenu> children)
+    RenderFragment RenderNestedList(List<UraMenuTree> children)
     {
         return builder =>
         {
@@ -48,7 +48,7 @@
 @code {
     [Inject] UraService UraService { get; set; } = default!;
 
-    List<UraMenu> Menus = new();
+    List<UraMenuTree> Menus = new();
 
     string DocumentUrl = string.Empty;
 

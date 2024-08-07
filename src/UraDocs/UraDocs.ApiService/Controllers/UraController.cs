@@ -23,13 +23,13 @@ public class UraController : ApiControllerBase
 
         foreach(var menu in menus)
         {
-            await PrepareMenuAsync(menu);
+            //await PrepareMenuAsync(menu);
         }
 
         return Ok(menus);
     }
 
-    private async Task PrepareMenuAsync(UraMenu menu)
+    private async Task PrepareMenuAsync(UraMenuTree menu)
     {
         var path = FileHelper.SharpPath(menu.Path);
 

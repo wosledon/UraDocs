@@ -11,13 +11,13 @@ public class UraService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<List<UraMenu>> GetMenusAsync()
+    public async Task<List<UraMenuTree>> GetMenusAsync()
     {
         var httpClient = _httpClientFactory.CreateClient("apiservice");
 
-        List<UraMenu>? menus = null;
+        List<UraMenuTree>? menus = null;
 
-        await foreach (var menu in httpClient.GetFromJsonAsAsyncEnumerable<UraMenu>("api/ura/menu"))
+        await foreach (var menu in httpClient.GetFromJsonAsAsyncEnumerable<UraMenuTree>("api/ura/menu"))
         {
             if (menu is not null)
             {
@@ -26,6 +26,6 @@ public class UraService
             }
         }
 
-        return menus ?? new List<UraMenu>();
+        return menus ?? new List<UraMenuTree>();
     }
 }

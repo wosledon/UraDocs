@@ -4,18 +4,18 @@
 
 <PageTitle>Document</PageTitle>
 <MudPaper Width="300px" Elevation="0">
-    <MudTreeView T="UraMenu" ExpandOnClick>
+    <MudTreeView T="UraMenuTree" ExpandOnClick>
         @RenderNestedList(Menus)
     </MudTreeView>
 </MudPaper>
 @functions {
-    RenderFragment RenderNestedList(List<UraMenu> children)
+    RenderFragment RenderNestedList(List<UraMenuTree> children)
     {
         return builder =>
         {
             foreach (var child in children)
             {
-                builder.OpenComponent<MudTreeViewItem<UraMenu>>(0);
+                builder.OpenComponent<MudTreeViewItem<UraMenuTree>>(0);
                 builder.AddAttribute(1, "Text", child.Name);
                 builder.AddAttribute(2, "Icon", Icons.Custom.FileFormats.FileDocument);
                 builder.AddAttribute(3, "Value", child);
@@ -34,7 +34,7 @@
 @code {
     [Inject] UraService UraService { get; set; } = default!;
 
-    List<UraMenu> Menus = new();
+    List<UraMenuTree> Menus = new();
 
     async Task RefreshMenusAsync()
     {
