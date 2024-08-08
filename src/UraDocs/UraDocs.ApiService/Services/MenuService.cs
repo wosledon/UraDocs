@@ -8,6 +8,43 @@ public class MenuService
 {
     private static List<UraMenu> _menus = new();
 
+    static object _lock = new();
+
+    private void LoadMenus()
+    {
+        lock(_lock)
+        {
+            if(!_menus.Any())
+            {
+                _menus = GetPhyUraMenus();
+            }
+        }
+    }
+
+    private void ReloadMenus()
+    {
+        lock(_lock)
+        {
+            _menus = GetPhyUraMenus();
+        }
+    }
+
+    private void UpdateMenus(List<UraMenu> menus)
+    {
+        lock (_lock)
+        {
+            _menus = menus;
+        }
+    }
+
+    private void AddMenu(UraMenu menu)
+    {
+        lock (_lock)
+        {
+            _menus.Add(menu);
+        }
+    }
+
     private string GetMenuPath()
     {
        var menuPath = FileHelper.GetUraMenuPath();
@@ -35,19 +72,46 @@ public class MenuService
 
         await File.WriteAllTextAsync(menuPath, menus.ToJson());
 
-        _menus = menus;
+        UpdateMenus(menus);
     }
 
     public async Task DeleteUraMenuAsync(UraMenu menu)
     {
-        _menus = _menus.Where(x => x.Path != menu.Path).ToList();
+        var menus = _menus.Where(x => x.Path != menu.Path).ToList();
 
-        await UpdateUraMenuAsync(_menus);
+        await UpdateUraMenuAsync(menus);
     }
 
     public async Task InsertUraMenuAsync(UraMenu menu)
     {
-        _menus.Add(menu);
+        AddMenu(menu);
         await UpdateUraMenuAsync(_menus);
     }
+
+    public List<UraMenuTree> GetMenuTree()
+    {
+        return _menus.ToUraMenuTreeList();
+    }
+
+    private List<string> GetMenuPaths()
+    {
+        var markdownPath = FileHelper.GetMarkdownPath();
+
+        return Directory.GetFiles(markdownPath, "*.md", SearchOption.AllDirectories).ToList();
+    }
+
+    private List<UraMenu> GetPhyUraMenus()
+    {
+       var paths = GetMenuPaths();
+
+        return paths.Select(x => {
+            return new UraMenu
+            {
+                Path = x,
+                Name = Path.GetFileNameWithoutExtension(x),
+                Hash = x.GetFileHash(),
+            };
+        }).ToList();
+    }
 }
+ 

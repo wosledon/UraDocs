@@ -73,4 +73,14 @@ public class FileHelper
 
         return regPath.StartsWith("./") ? regPath : $"./{regPath}";
     }
+
+    public static string GetFileName(string path)
+    {
+        return Path.GetFileName(path);
+    }
+
+    public static string GetFileNameWithoutExtension(string path)
+    {
+        return Path.GetFileNameWithoutExtension(path);
+    }
 }

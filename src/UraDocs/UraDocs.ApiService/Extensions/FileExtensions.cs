@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Text;
 
 namespace UraDocs.ApiService.Extensions;
 
@@ -23,6 +24,28 @@ public static class FileExtensions
         {
             hash = string.Empty;
             return false;
+        }
+    }
+
+    public static string GetFileHash(this string filePath)
+    {
+
+        if (TryGetFileHash(filePath, out var hash))
+        {
+            return hash;
+        }
+
+        return string.Empty;
+    }
+
+    public static string Md5(this string text)
+    {
+        using (var md5 = MD5.Create())
+        {
+            byte[] inputBytes = Encoding.UTF8.GetBytes(text);
+            byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         }
     }
 }
