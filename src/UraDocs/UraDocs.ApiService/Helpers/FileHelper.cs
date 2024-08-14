@@ -12,7 +12,7 @@ public class FileHelper
 
     public static string GetMarkDownPath(string path)
     {
-        return Path.Combine(Contas.MarkdownPath, path.TrimStart(new[] {'.', '/'}));
+        return Path.Combine(Contas.MarkdownPath, path.TrimStart(new[] { '.', '/' }));
     }
 
     public static string GetHtmlPath()
@@ -22,12 +22,12 @@ public class FileHelper
 
     public static string GetUraProjectPath()
     {
-        return Path.Combine(Directory.GetCurrentDirectory(), Contas.UraProjectPath);
+        return Path.Combine(Directory.GetCurrentDirectory(), Contas.UraProjectFileName);
     }
 
     public static string GetUraMenuPath()
     {
-        return Path.Combine(Directory.GetCurrentDirectory(), Contas.UraMenuPath);
+        return Path.Combine(Directory.GetCurrentDirectory(), Contas.UraMenuFileName);
     }
 
     public static async Task<List<UraMenu>> GetMenuAsync()
@@ -52,7 +52,7 @@ public class FileHelper
     }
 
     private static async Task<T> ReadAndCheckAsync<T>(string path)
-        where T:new()
+        where T : new()
     {
         if (!File.Exists(path))
         {
@@ -69,7 +69,7 @@ public class FileHelper
 
     public static string SharpPath(string path)
     {
-        var regPath =  path.Replace("//", "/").Replace("\\", "/");
+        var regPath = path.Replace("//", "/").Replace("\\", "/");
 
         return regPath.StartsWith("./") ? regPath : $"./{regPath}";
     }

@@ -28,10 +28,15 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddProblemDetails();
 
+builder.Services.AddScoped<MenuService>();
 builder.Services.AddScoped<DocumentService>();
-builder.Services.AddScoped<UnitOfWork>();
+
 builder.Services.AddSingleton<SnowflakeGeneratorService>();
-builder.Services.AddHostedService<FileWaterBackgroundService>();
+
+builder.Services.AddHostedService<MenuWatcherBackgroundService>();
+builder.Services.AddHostedService<MarkdownWatcherBackgroundService>();
+
+builder.Services.AddScoped<UnitOfWork>();
 builder.Services.AddDbContext<UraDbContext>(options =>
 {
     options.UseSqlite("Data Source=ura.db");

@@ -12,18 +12,18 @@ public class MenuService
 
     private void LoadMenus()
     {
-        lock(_lock)
+        lock (_lock)
         {
-            if(!_menus.Any())
+            if (!_menus.Any())
             {
                 _menus = GetPhyUraMenus();
             }
         }
     }
 
-    private void ReloadMenus()
+    public void ReloadMenus()
     {
-        lock(_lock)
+        lock (_lock)
         {
             _menus = GetPhyUraMenus();
         }
@@ -47,7 +47,7 @@ public class MenuService
 
     private string GetMenuPath()
     {
-       var menuPath = FileHelper.GetUraMenuPath();
+        var menuPath = FileHelper.GetUraMenuPath();
 
         if (!File.Exists(menuPath))
             throw new FileNotFoundException("El archivo no existe", menuPath);
@@ -56,7 +56,7 @@ public class MenuService
     }
     public async Task<List<UraMenu>> GetUraMenuAsync()
     {
-        if(_menus.Any())
+        if (_menus.Any())
             return _menus;
 
         var menuPath = GetMenuPath();
@@ -102,9 +102,10 @@ public class MenuService
 
     private List<UraMenu> GetPhyUraMenus()
     {
-       var paths = GetMenuPaths();
+        var paths = GetMenuPaths();
 
-        return paths.Select(x => {
+        return paths.Select(x =>
+        {
             return new UraMenu
             {
                 Path = x,
@@ -114,4 +115,3 @@ public class MenuService
         }).ToList();
     }
 }
- 

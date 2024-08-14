@@ -4,12 +4,12 @@ using UraDocs.Shared;
 
 namespace UraDocs.ApiService.Services;
 
-public class FileWaterBackgroundService : BackgroundService
+public class MarkdownWatcherBackgroundService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private FileSystemWatcher _watcher = null!;
 
-    public FileWaterBackgroundService(
+    public MarkdownWatcherBackgroundService(
         IServiceProvider serviceProvider
         , IWebHostEnvironment webHost)
     {
@@ -21,7 +21,7 @@ public class FileWaterBackgroundService : BackgroundService
     private void PrepareWatcher()
     {
         var markdownPath = GetMarkdownPath();
-        if(!Directory.Exists(markdownPath))
+        if (!Directory.Exists(markdownPath))
         {
             Directory.CreateDirectory(markdownPath);
         }
@@ -33,7 +33,7 @@ public class FileWaterBackgroundService : BackgroundService
             NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size
         };
 
-        _watcher.Changed += async (s, e)=> await OnChanged(s, e);
+        _watcher.Changed += async (s, e) => await OnChanged(s, e);
         _watcher.Created += async (s, e) => await OnChanged(s, e);
         _watcher.Deleted += async (s, e) => await OnChanged(s, e);
         _watcher.Renamed += async (s, e) => await OnRenamed(s, e);
@@ -49,7 +49,7 @@ public class FileWaterBackgroundService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var documentService = scope.ServiceProvider.GetRequiredService<DocumentService>();
 
-        
+
         var path = GetRelativePath(e.FullPath);
 
         switch (e.ChangeType)
@@ -78,12 +78,12 @@ public class FileWaterBackgroundService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var documentService = scope.ServiceProvider.GetRequiredService<DocumentService>();
 
-        if(IsTemporaryFile(e.Name ?? string.Empty))
+        if (IsTemporaryFile(e.Name ?? string.Empty))
         {
             return;
         }
 
-        if(IsTemporaryFile(e.OldName ?? string.Empty))
+        if (IsTemporaryFile(e.OldName ?? string.Empty))
         {
             await documentService.UpdateHtmlAsync(GetRelativePath(e.FullPath));
         }
@@ -102,14 +102,12 @@ public class FileWaterBackgroundService : BackgroundService
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _watcher.EnableRaisingEvents = true;
-
         return Task.CompletedTask;
     }
 
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         _watcher.EnableRaisingEvents = false;
-
         return Task.CompletedTask;
     }
 }

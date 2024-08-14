@@ -33,6 +33,12 @@ public class DocumentService
         return path;
     }
 
+    /// <summary>
+    /// TODO: Implement this method
+    /// </summary>
+    /// <param name="fileHash"></param>
+    /// <param name="markdownPath"></param>
+    /// <returns></returns>
     private async Task<(FileHash? fileHash,string relationMarkdownPath)> GetFileHashAsync(string markdownPath)
     {
         var relationMarkdownPath = CheckMarkdownPath(markdownPath);

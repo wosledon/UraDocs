@@ -6,6 +6,6 @@ public class Contas
     public const string HtmlPath = "docs";
     public const string GlobalCors = "cors_allows_all";
 
-    public const string UraProjectPath = "ura.json";
-    public const string UraMenuPath = "menu.json";
+    public const string UraProjectFileName = "ura.json";
+    public const string UraMenuFileName = "menu.json";
 }
