@@ -12,16 +12,15 @@ public class DocumentService
 {
     private readonly IWebHostEnvironment _webHost;
     private readonly SnowflakeGeneratorService _snowflakeGeneratorService;
-    private readonly UnitOfWork _db;
-
+    private readonly MenuService _menuService;
     public DocumentService(
         IWebHostEnvironment webHost
         , SnowflakeGeneratorService snowflakeGeneratorService
-        , UnitOfWork db)
+        , MenuService menuService)
     {
         _webHost = webHost;
         _snowflakeGeneratorService = snowflakeGeneratorService;
-        _db = db;
+        _menuService = menuService;
     }
 
     private string CheckMarkdownPath(string markdownPath)
@@ -36,16 +35,16 @@ public class DocumentService
     /// <summary>
     /// TODO: Implement this method
     /// </summary>
-    /// <param name="fileHash"></param>
+    /// <param name="menu"></param>
     /// <param name="markdownPath"></param>
     /// <returns></returns>
-    private async Task<(FileHash? fileHash,string relationMarkdownPath)> GetFileHashAsync(string markdownPath)
+    private async Task<(UraMenu? menu, string relationMarkdownPath)> GetMenuAsync(string markdownPath)
     {
         var relationMarkdownPath = CheckMarkdownPath(markdownPath);
 
-        var fileHash = await _db.Query<FileHash>().FirstOrDefaultAsync(x => x.FilePath.ToLower() == markdownPath.ToLower());
+        var menu = await _menuService.FirstOrDefaultAsync(x => x.Path.ToLower() == markdownPath.ToLower());
 
-        return (fileHash, relationMarkdownPath);
+        return (menu, relationMarkdownPath);
     }
 
     private string GetHtml(string markdown)
@@ -123,7 +122,7 @@ pre[class*=""language-""].line-numbers .line-numbers-rows > span:before {{
 
     public async Task GeneratorHtmlAsync(string markdownPath)
     {
-        var (fileHash, relationMarkdownPath) = await GetFileHashAsync(markdownPath);
+        var (fileHash, relationMarkdownPath) = await GetMenuAsync(markdownPath);
 
         if (fileHash is not null) return;
 
@@ -138,15 +137,15 @@ pre[class*=""language-""].line-numbers .line-numbers-rows > span:before {{
             return;
         }
 
-        var hash = new FileHash
+        var menu = new UraMenu
         {
-            FilePath = markdownPath,
-            FileName = Path.GetFileName(markdownPath),
+            Path = markdownPath,
+            Name = Path.GetFileNameWithoutExtension(markdownPath),
             Hash = hashString,
-            Html = $"{htmlId}.html"
+            HtmlDoc = $"{htmlId}.html"
         };
 
-        var path = GetHtmlPath(hash.Html);
+        var path = GetHtmlPath(menu.HtmlDoc);
 
         if (!File.Exists(path))
         {
@@ -154,7 +153,8 @@ pre[class*=""language-""].line-numbers .line-numbers-rows > span:before {{
         }
 
         await WriteTextAsync(path, html);
-        await _db.InsertAsync(hash);
+        // await _db.InsertAsync(hash);
+        await _menuService.InsertUraMenuAsync(menu);
     }
 
     private async Task<bool> WriteTextAsync(string path, string text)
@@ -165,7 +165,7 @@ pre[class*=""language-""].line-numbers .line-numbers-rows > span:before {{
 
             return true;
         }
-        catch 
+        catch
         {
             return false;
         }
@@ -190,63 +190,63 @@ pre[class*=""language-""].line-numbers .line-numbers-rows > span:before {{
 
     public async Task UpdateHtmlAsync(string markdownPath)
     {
-        var (fileHash, relationMarkdownPath) = await GetFileHashAsync(markdownPath);
+        var (menu, relationMarkdownPath) = await GetMenuAsync(markdownPath);
 
-        if (fileHash == null)
+        if (menu == null)
         {
             await GeneratorHtmlAsync(markdownPath);
             return;
         }
 
-        if(!relationMarkdownPath.TryGetFileHash(out var hash))
+        if (!relationMarkdownPath.TryGetFileHash(out var hash))
         {
             return;
         }
 
-        if (hash == fileHash.Hash)
+        if (hash == menu.Hash)
         {
             return;
         }
-        
+
         var markdown = await ReadTextAsync(relationMarkdownPath);
 
         var html = GetHtml(markdown);
 
-        var path = GetHtmlPath(fileHash.Html);
+        var path = GetHtmlPath(menu.HtmlDoc);
 
         if (!File.Exists(path))
         {
             File.Create(path);
         }
 
-        if(await WriteTextAsync(path, html))
+        if (await WriteTextAsync(path, html))
         {
-            await _db.UpdateAsync(fileHash);
+            await _menuService.UpdateUraMenuAsync(menu);
         }
     }
 
     public async Task DeleteHtmlAsync(string markdownPath)
     {
-        var (fileHash, relationMarkdownPath) = await GetFileHashAsync(markdownPath);
+        var (menu, relationMarkdownPath) = await GetMenuAsync(markdownPath);
 
-        if (fileHash == null)
+        if (menu == null)
             return;
 
-        var path = GetHtmlPath(fileHash.Html);
+        var path = GetHtmlPath(menu.HtmlDoc);
 
         if (File.Exists(path))
         {
             File.Delete(path);
         }
 
-        await _db.DeleteAsync(fileHash);
+        await _menuService.DeleteUraMenuAsync(menu);
     }
 
     private string GetHtmlPath(string htmlName)
     {
         var folder = Path.Combine(_webHost.WebRootPath, Contas.HtmlPath);
 
-        if(!Directory.Exists(folder))
+        if (!Directory.Exists(folder))
         {
             Directory.CreateDirectory(folder);
         }

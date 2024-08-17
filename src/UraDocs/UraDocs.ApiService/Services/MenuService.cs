@@ -66,6 +66,13 @@ public class MenuService
         return menu.ToObject<List<UraMenu>>() ?? [];
     }
 
+    public async Task<UraMenu?> FirstOrDefaultAsync(Func<UraMenu, bool> predicate)
+    {
+        var menus = await GetUraMenuAsync();
+
+        return menus.FirstOrDefault(predicate);
+    }
+
     public async Task UpdateUraMenuAsync(List<UraMenu> menus)
     {
         var menuPath = GetMenuPath();
@@ -73,6 +80,15 @@ public class MenuService
         await File.WriteAllTextAsync(menuPath, menus.ToJson());
 
         UpdateMenus(menus);
+    }
+
+    public async Task UpdateUraMenuAsync(UraMenu menu)
+    {
+        var updateMenu = _menus.FirstOrDefault(x => x.Path == menu.Path);
+
+        updateMenu = menu;
+
+        await UpdateUraMenuAsync(_menus);
     }
 
     public async Task DeleteUraMenuAsync(UraMenu menu)

@@ -1,5 +1,6 @@
 ﻿namespace UraDocs.ApiService.Domain;
 
+[Obsolete]
 public class FileHash
 {
     public Guid Id { get; set; }
