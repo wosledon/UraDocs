@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.FileProviders;
+using System.Collections.Concurrent;
 using UraDocs.ApiService.Helpers;
 using UraDocs.Shared;
 
@@ -8,6 +9,8 @@ public class MarkdownWatcherBackgroundService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private FileSystemWatcher _watcher = null!;
+
+    private readonly ConcurrentDictionary<string, DateTime> _lastProcessed = new ConcurrentDictionary<string, DateTime>();
 
     public MarkdownWatcherBackgroundService(
         IServiceProvider serviceProvider
@@ -30,11 +33,12 @@ public class MarkdownWatcherBackgroundService : BackgroundService
         {
             Path = GetMarkdownPath(),
             Filter = "*.md",
-            NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size
+            NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size,
+            IncludeSubdirectories = true
         };
 
         _watcher.Changed += async (s, e) => await OnChanged(s, e);
-        _watcher.Created += async (s, e) => await OnChanged(s, e);
+        //_watcher.Created += async (s, e) => await OnChanged(s, e);
         _watcher.Deleted += async (s, e) => await OnChanged(s, e);
         _watcher.Renamed += async (s, e) => await OnRenamed(s, e);
     }
@@ -46,9 +50,25 @@ public class MarkdownWatcherBackgroundService : BackgroundService
 
     private async Task OnChanged(object source, FileSystemEventArgs e)
     {
+        var now = DateTime.Now;
+
+        if(_lastProcessed.TryGetValue(e.FullPath, out var lastProcessedTime))
+        {
+            if ((now - lastProcessedTime).TotalMilliseconds < 500)
+            {
+                return; // Ignore events that occur within 500 milliseconds
+            }
+        }
+        else
+        {
+            _lastProcessed[e.FullPath] = now;
+        }
+
+
+        _lastProcessed[e.FullPath] = now;
+
         using var scope = _serviceProvider.CreateScope();
         var documentService = scope.ServiceProvider.GetRequiredService<DocumentService>();
-
 
         var path = GetRelativePath(e.FullPath);
 
@@ -57,9 +77,9 @@ public class MarkdownWatcherBackgroundService : BackgroundService
             case WatcherChangeTypes.Changed:
                 await documentService.UpdateHtmlAsync(path);
                 break;
-            case WatcherChangeTypes.Created:
-                await documentService.GeneratorHtmlAsync(path);
-                break;
+            //case WatcherChangeTypes.Created:
+            //    await documentService.GeneratorHtmlAsync(path);
+            //    break;
             case WatcherChangeTypes.Deleted:
                 await documentService.DeleteHtmlAsync(path);
                 break;

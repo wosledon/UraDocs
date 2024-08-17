@@ -13,7 +13,7 @@
             </MudTreeView>
         </MudItem>
         <MudItem md="9" sm="12">
-            <iframe src="@($"{@DocumentUrl}?time={DateTime.Now.Ticks}")"></iframe>
+            <iframe src="@($"{Contas.HtmlPath}/{@DocumentUrl}?time={DateTime.Now.Ticks}")"></iframe>
         </MudItem>
     </MudGrid>
 </MudContainer>

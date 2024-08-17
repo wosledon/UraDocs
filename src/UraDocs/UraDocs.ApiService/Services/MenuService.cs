@@ -1,4 +1,6 @@
-﻿using UraDocs.ApiService.Extensions;
+﻿using System.Collections.Concurrent;
+using System.Text;
+using UraDocs.ApiService.Extensions;
 using UraDocs.ApiService.Helpers;
 using UraDocs.Shared;
 
@@ -6,43 +8,38 @@ namespace UraDocs.ApiService.Services;
 
 public class MenuService
 {
-    private static List<UraMenu> _menus = new();
+    private static ConcurrentDictionary<string, UraMenu> _menus = new(StringComparer.OrdinalIgnoreCase);
 
-    static object _lock = new();
+    private static object _lock = new();
 
     private void LoadMenus()
     {
-        lock (_lock)
+        var menus = GetPhyUraMenus();
+
+        foreach (var menu in menus)
         {
-            if (!_menus.Any())
-            {
-                _menus = GetPhyUraMenus();
-            }
+            _menus.TryAdd(menu.Path, menu);
         }
     }
 
     public void ReloadMenus()
     {
-        lock (_lock)
-        {
-            _menus = GetPhyUraMenus();
-        }
+        LoadMenus();
     }
 
     private void UpdateMenus(List<UraMenu> menus)
     {
-        lock (_lock)
+        _menus.Clear();
+
+        foreach (var menu in menus)
         {
-            _menus = menus;
+            _menus.TryAdd(menu.Path, menu);
         }
     }
 
     private void AddMenu(UraMenu menu)
     {
-        lock (_lock)
-        {
-            _menus.Add(menu);
-        }
+        _menus.TryAdd(menu.Path, menu);
     }
 
     private string GetMenuPath()
@@ -57,11 +54,11 @@ public class MenuService
     public async Task<List<UraMenu>> GetUraMenuAsync()
     {
         if (_menus.Any())
-            return _menus;
+            return _menus.Values.ToList();
 
         var menuPath = GetMenuPath();
-
-        var menu = await File.ReadAllTextAsync(menuPath);
+ 
+        var menu = await ReadFromFileAsync(menuPath);
 
         return menu.ToObject<List<UraMenu>>() ?? [];
     }
@@ -73,35 +70,31 @@ public class MenuService
         return menus.FirstOrDefault(predicate);
     }
 
-    public async Task UpdateUraMenuAsync(List<UraMenu> menus)
+    public async Task UpdateUraMenuAsync()
     {
         var menuPath = GetMenuPath();
 
-        await File.WriteAllTextAsync(menuPath, menus.ToJson());
-
-        UpdateMenus(menus);
+        await WriteToFileAsync(menuPath, _menus.Values.ToJson());
     }
 
     public async Task UpdateUraMenuAsync(UraMenu menu)
     {
-        var updateMenu = _menus.FirstOrDefault(x => x.Path == menu.Path);
+        _menus[menu.Path] = menu;
 
-        updateMenu = menu;
-
-        await UpdateUraMenuAsync(_menus);
+        await UpdateUraMenuAsync();
     }
 
     public async Task DeleteUraMenuAsync(UraMenu menu)
     {
-        var menus = _menus.Where(x => x.Path != menu.Path).ToList();
+        _menus.TryRemove(menu.Path, out var removedMenu);
 
-        await UpdateUraMenuAsync(menus);
+        await UpdateUraMenuAsync();
     }
 
     public async Task InsertUraMenuAsync(UraMenu menu)
     {
-        AddMenu(menu);
-        await UpdateUraMenuAsync(_menus);
+        _menus.TryAdd(menu.Path, menu);
+        await UpdateUraMenuAsync();
     }
 
     public List<UraMenuTree> GetMenuTree()
@@ -129,5 +122,37 @@ public class MenuService
                 Hash = x.GetFileHash(),
             };
         }).ToList();
+    }
+
+    static async Task WriteToFileAsync(string filePath, string content)
+    {
+        byte[] encodedText = Encoding.UTF8.GetBytes(content);
+
+        using (FileStream sourceStream = new FileStream(filePath,
+            FileMode.Create, FileAccess.Write, FileShare.None,
+            bufferSize: 4096, useAsync: true))
+        {
+            await sourceStream.WriteAsync(encodedText, 0, encodedText.Length);
+        } // FileStream will be closed and disposed here
+    }
+
+    static async Task<string> ReadFromFileAsync(string filePath)
+    {
+        using (FileStream sourceStream = new FileStream(filePath,
+            FileMode.Open, FileAccess.Read, FileShare.Read,
+            bufferSize: 4096, useAsync: true))
+        {
+            StringBuilder sb = new StringBuilder();
+
+            byte[] buffer = new byte[0x1000];
+            int numRead;
+            while ((numRead = await sourceStream.ReadAsync(buffer, 0, buffer.Length)) != 0)
+            {
+                string text = Encoding.UTF8.GetString(buffer, 0, numRead);
+                sb.Append(text);
+            }
+
+            return sb.ToString();
+        } // FileStream will be closed and disposed here
     }
 }

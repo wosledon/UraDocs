@@ -28,26 +28,15 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddProblemDetails();
 
-builder.Services.AddScoped<MenuService>();
-builder.Services.AddScoped<DocumentService>();
+builder.Services.AddSingleton<MenuService>();
+builder.Services.AddSingleton<DocumentService>();
 
 builder.Services.AddSingleton<SnowflakeGeneratorService>();
 
 // builder.Services.AddHostedService<MenuWatcherBackgroundService>();
 builder.Services.AddHostedService<MarkdownWatcherBackgroundService>();
 
-builder.Services.AddScoped<UnitOfWork>();
-builder.Services.AddDbContext<UraDbContext>(options =>
-{
-    options.UseSqlite("Data Source=ura.db");
-});
-
 var app = builder.Build();
-
-app.UseSqlite(opts =>
-{
-    opts.Reset = false;
-});
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();

@@ -9,41 +9,17 @@ namespace UraDocs.ApiService.Controllers;
 
 public class UraController : ApiControllerBase
 {
-    private readonly UnitOfWork _db;
+    private readonly MenuService _menuService;
 
-    public UraController(UnitOfWork db)
+    public UraController(MenuService menuService)
     {
-        _db = db;
+        _menuService = menuService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> MenuAsync()
+    public IActionResult MenuAsync()
     {
-        var menus = await FileHelper.GetMenuAsync();
-
-        foreach(var menu in menus)
-        {
-            //await PrepareMenuAsync(menu);
-        }
-
-        return Ok(menus);
-    }
-
-    private async Task PrepareMenuAsync(UraMenuTree menu)
-    {
-        var path = FileHelper.SharpPath(menu.Path);
-
-        var fileHash = await _db.Query<FileHash>().FirstOrDefaultAsync(x => x.FilePath.ToLower() == path.ToLower());
-
-        menu.HtmlDoc = GetHtmlPath(fileHash?.Html);
-
-        if(menu.Children is not null)
-        {
-            foreach (var child in menu.Children)
-            {
-                await PrepareMenuAsync(child);
-            }
-        }
+        return Ok(_menuService.GetMenuTree());
     }
 
     private string GetHtmlPath(string? path)
