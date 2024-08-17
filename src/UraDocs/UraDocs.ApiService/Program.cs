@@ -33,7 +33,7 @@ builder.Services.AddScoped<DocumentService>();
 
 builder.Services.AddSingleton<SnowflakeGeneratorService>();
 
-builder.Services.AddHostedService<MenuWatcherBackgroundService>();
+// builder.Services.AddHostedService<MenuWatcherBackgroundService>();
 builder.Services.AddHostedService<MarkdownWatcherBackgroundService>();
 
 builder.Services.AddScoped<UnitOfWork>();

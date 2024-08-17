@@ -4,6 +4,7 @@ using UraDocs.Shared;
 
 namespace UraDocs.ApiService.Services;
 
+[Obsolete]
 public class MenuWatcherBackgroundService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
