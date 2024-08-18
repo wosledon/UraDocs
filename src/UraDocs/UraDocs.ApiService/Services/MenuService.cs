@@ -10,7 +10,10 @@ public class MenuService
 {
     private static ConcurrentDictionary<string, UraMenu> _menus = new(StringComparer.OrdinalIgnoreCase);
 
-    private static object _lock = new();
+    public MenuService()
+    {
+        LoadMenus();
+    }
 
     private void LoadMenus()
     {
@@ -115,9 +118,11 @@ public class MenuService
 
         return paths.Select(x =>
         {
+            var relativePath = Path.GetRelativePath(FileHelper.GetMarkdownPath(), x);
+
             return new UraMenu
             {
-                Path = x,
+                Path = relativePath,
                 Name = Path.GetFileNameWithoutExtension(x),
                 Hash = x.GetFileHash(),
             };

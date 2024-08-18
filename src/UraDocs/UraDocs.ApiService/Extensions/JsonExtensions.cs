@@ -10,7 +10,7 @@ public static class JsonExtensions
 
         try
         {
-            return JsonConvert.SerializeObject(value);
+            return JsonConvert.SerializeObject(value, Formatting.Indented);
         }
         catch
         {

@@ -71,7 +71,7 @@ public class FileHelper
     {
         var regPath = path.Replace("//", "/").Replace("\\", "/");
 
-        return regPath.StartsWith("./") ? regPath : $"./{regPath}";
+        return regPath.StartsWith("/") ? regPath : $"{regPath.TrimStart('.')}";
     }
 
     public static string GetFileName(string path)
