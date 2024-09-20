@@ -8,7 +8,7 @@ namespace UraDocs.ApiService.Services;
 
 public class MenuService
 {
-    private static ConcurrentDictionary<string, UraMenu> _menus = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, UraMenu> _menus = new(StringComparer.OrdinalIgnoreCase);
 
     public MenuService()
     {
@@ -19,6 +19,7 @@ public class MenuService
     {
         var menus = GetPhyUraMenus();
 
+        _menus.Clear();
         foreach (var menu in menus)
         {
             _menus.TryAdd(menu.Path, menu);
@@ -33,7 +34,6 @@ public class MenuService
     private void UpdateMenus(List<UraMenu> menus)
     {
         _menus.Clear();
-
         foreach (var menu in menus)
         {
             _menus.TryAdd(menu.Path, menu);
@@ -50,20 +50,24 @@ public class MenuService
         var menuPath = FileHelper.GetUraMenuPath();
 
         if (!File.Exists(menuPath))
+        {
             throw new FileNotFoundException("El archivo no existe", menuPath);
+        }
 
         return menuPath;
     }
+
     public async Task<List<UraMenu>> GetUraMenuAsync()
     {
         if (_menus.Any())
+        {
             return _menus.Values.ToList();
+        }
 
         var menuPath = GetMenuPath();
- 
         var menu = await ReadFromFileAsync(menuPath);
 
-        return menu.ToObject<List<UraMenu>>() ?? [];
+        return menu.ToObject<List<UraMenu>>() ?? new List<UraMenu>();
     }
 
     public async Task<UraMenu?> FirstOrDefaultAsync(Func<UraMenu, bool> predicate)
@@ -89,7 +93,7 @@ public class MenuService
 
     public async Task DeleteUraMenuAsync(UraMenu menu)
     {
-        _menus.TryRemove(menu.Path, out var removedMenu);
+        _menus.TryRemove(menu.Path, out _);
 
         await UpdateUraMenuAsync();
     }
@@ -129,25 +133,21 @@ public class MenuService
         }).ToList();
     }
 
-    static async Task WriteToFileAsync(string filePath, string content)
+    private static async Task WriteToFileAsync(string filePath, string content)
     {
         byte[] encodedText = Encoding.UTF8.GetBytes(content);
 
-        using (FileStream sourceStream = new FileStream(filePath,
-            FileMode.Create, FileAccess.Write, FileShare.None,
-            bufferSize: 4096, useAsync: true))
+        await using (FileStream sourceStream = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
         {
             await sourceStream.WriteAsync(encodedText, 0, encodedText.Length);
-        } // FileStream will be closed and disposed here
+        }
     }
 
-    static async Task<string> ReadFromFileAsync(string filePath)
+    private static async Task<string> ReadFromFileAsync(string filePath)
     {
-        using (FileStream sourceStream = new FileStream(filePath,
-            FileMode.Open, FileAccess.Read, FileShare.Read,
-            bufferSize: 4096, useAsync: true))
+        await using (FileStream sourceStream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true))
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             byte[] buffer = new byte[0x1000];
             int numRead;
@@ -158,6 +158,6 @@ public class MenuService
             }
 
             return sb.ToString();
-        } // FileStream will be closed and disposed here
+        }
     }
 }

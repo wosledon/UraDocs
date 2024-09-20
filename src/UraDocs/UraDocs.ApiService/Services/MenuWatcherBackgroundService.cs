@@ -19,7 +19,7 @@ public class MenuWatcherBackgroundService : BackgroundService
         PrepareWatcher().Wait();
     }
 
-    string GetUraMenuPath() => Directory.GetCurrentDirectory();
+    private string GetUraMenuPath() => Directory.GetCurrentDirectory();
 
     private async Task PrepareWatcher()
     {
